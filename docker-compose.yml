@@ -11,6 +11,10 @@ services:
       - ./mnesia_data:/app/mnesia_data
     networks:
       - web
+    ulimits:
+      nofile:
+        soft: 200000
+        hard: 200000
 
   caddy:
     image: caddy:latest
@@ -24,6 +28,10 @@ services:
       - caddy_config:/config
     networks:
       - web
+    ulimits:
+      nofile:
+        soft: 200000
+        hard: 200000
 
   dozzle:
     image: amir20/dozzle:latest
@@ -35,6 +43,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - web
+    ulimits:
+      nofile:
+        soft: 200000
+        hard: 200000
 
 volumes:
   caddy_data:
