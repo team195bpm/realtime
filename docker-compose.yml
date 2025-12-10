@@ -1,0 +1,44 @@
+services:
+  app:
+    build: ./app
+    restart: always
+    environment:
+      # IMPORTANT: We fix the node name so Mnesia doesn't get confused on restart
+      - RELEASE_NODE=tracker@127.0.0.1
+      - SECRET_KEY_BASE=sLWetc3vPAd+c12VP3r0Wtm/6a9PSPTZxQYmyhz/BWiv7gHNAc2yoOvEmLME3O1Z
+    volumes:
+      # Persist Mnesia data to the host
+      - ./mnesia_data:/app/mnesia_data
+    networks:
+      - web
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_BASE: /logs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  web:

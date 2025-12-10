@@ -1,0 +1,14 @@
+:80 {
+    # 1. Handle WebSockets
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade    *websocket*
+    }
+    reverse_proxy @websockets app:4000
+
+    # 2. Handle API
+    reverse_proxy /api/* app:4000
+
+    # 3. Handle Logs
+    reverse_proxy /logs* dozzle:8080
+}

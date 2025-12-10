@@ -1,0 +1,22 @@
+realtime.team195bpm.com {
+    # Handle the WebSocket connection
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade    *websocket*
+    }
+    reverse_proxy @websockets app:4000
+
+    # Handle the API Endpoint
+    reverse_proxy /api/* app:4000
+
+    # Handle Dozzle Logs securely
+    # To generate a hash run: docker run --rm caddy caddy hash-password --plaintext 'mypassword'
+    route /logs* {
+        basicauth {
+            rahul $2a$14$6hjw.fhvxKym/1nEfzhQ4ezZ57MuZNcMPl6QFcuQZyBc4Q0Hzjdri
+        }
+        # REMOVED `uri strip_prefix /logs` because we set DOZZLE_BASE=/logs in docker-compose
+        # If we strip it, Dozzle (expecting /logs) receives requests at root / and returns 404.
+        reverse_proxy dozzle:8080
+    }
+}

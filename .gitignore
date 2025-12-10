@@ -1,0 +1,10 @@
+# Docker
+docker-compose.override.yml
+# Data
+mnesia_data/
+caddy_data/
+caddy_config/
+# Elixir
+app/_build
+app/deps
+.elixir_ls
