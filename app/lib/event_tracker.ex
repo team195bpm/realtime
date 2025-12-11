@@ -115,6 +115,18 @@ defmodule EventTracker.DB do
     {:atomic, 0} = :mnesia.transaction(transaction)
     0
   end
+
+  def set(event_id, category_id, count) do
+    key = {event_id, category_id}
+
+    transaction = fn ->
+      :mnesia.write({:registrations, key, count})
+      count
+    end
+
+    {:atomic, val} = :mnesia.transaction(transaction)
+    val
+  end
 end
 
 defmodule EventTracker.EventChannel do
@@ -153,6 +165,7 @@ defmodule EventTracker.Router do
     pipe_through(:api)
     post("/register", RegistrationController, :create)
     post("/reset", RegistrationController, :reset)
+    post("/set", RegistrationController, :set)
   end
 end
 
@@ -169,6 +182,12 @@ defmodule EventTracker.RegistrationController do
     EventTracker.DB.reset(e, c)
     EventTracker.Endpoint.broadcast!("event:#{e}", "update", %{category: c, count: 0})
     json(conn, %{status: "ok", count: 0})
+  end
+
+  def set(conn, %{"event_id" => e, "category_id" => c, "count" => count}) do
+    EventTracker.DB.set(e, c, count)
+    EventTracker.Endpoint.broadcast!("event:#{e}", "update", %{category: c, count: count})
+    json(conn, %{status: "ok", count: count})
   end
 end
 
