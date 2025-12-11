@@ -166,6 +166,7 @@ defmodule EventTracker.Router do
     post("/register", RegistrationController, :create)
     post("/reset", RegistrationController, :reset)
     post("/set", RegistrationController, :set)
+    get("/events/:event_id/counts", RegistrationController, :counts)
   end
 end
 
@@ -188,6 +189,11 @@ defmodule EventTracker.RegistrationController do
     EventTracker.DB.set(e, c, count)
     EventTracker.Endpoint.broadcast!("event:#{e}", "update", %{category: c, count: count})
     json(conn, %{status: "ok", count: count})
+  end
+
+  def counts(conn, %{"event_id" => e}) do
+    data = EventTracker.DB.get_all(e)
+    json(conn, %{status: "ok", counts: data})
   end
 end
 
